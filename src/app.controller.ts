@@ -44,7 +44,7 @@ export class AppController {
         // Create a new database entry
         return this.notion.createEntry(database, {
             ...data,
-            date: moment(data.date),
+            date: moment(data.date, "MMMM DD, YYYY at HH:mmA"),
         });
     }
 }
