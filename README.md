@@ -1,73 +1,86 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+# `weight-logger`
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+`weight-logger` is a simple application which enables you to sync readings from your Withings scale to a Notion page.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Preview
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+![](assets/example.png)
 
 ## Installation
 
-```bash
-$ npm install
-```
+### Requirements
 
-## Running the app
+-   [Withings Account](https://healthmate.withings.com/)
+-   [Notion Account](https://notion.so)
+-   [IFTTT Account](https://ifttt.com/home)
+-   Server running [`docker`](https://www.docker.com/) _and_ [`docker-compose`](https://docs.docker.com/compose/)
 
-```bash
-# development
-$ npm run start
+### Getting Started
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
+1. Clone this repository on your server and enter it
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone git@github.com:4dams/weight-logger.git && \
+cd weight-logger
 ```
 
-## Support
+2. Create a new [Notion Integration](https://www.notion.so/my-integrations) ([notion.so/my-integrations](https://www.notion.so/my-integrations)) and copy its **Internal Integration Token**:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+![](assets/integration.gif)
+_I've changed mine, don't worry_ 😉
 
-## Stay in touch
+3. Create a `docker-compose.yml` file, for example:
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```yaml
+# docker-compose.yml
+
+version: "3.7"
+
+services:
+    logger:
+        build:
+            context: .
+        container_name: logger
+        ports:
+            - 3000:3000
+        environment:
+            # This is the "Internal Integration Token" from before
+            - NOTION_API_KEY=secret_Gix...
+```
+
+4. Start the application
+
+```bash
+docker-compose up -d
+```
+
+5. Create a new [IFTTT Applet](https://ifttt.com/create) ([ifttt.com/create](https://ifttt.com/create))
+
+-   Choose _Withings_ > _When I have a new weight_ as your trigger.
+-   Choose _Webhooks_ > _Make a web request_ as your service
+-   Configure the service as follows:
+
+![](assets/service.png)
+
+As for the Body, **copy and paste** the following:
+
+```
+{
+	"date": "{{DateAndTime}}",
+	"unit": "{{Unit}}",
+	"weight": {{Weight}},
+	"fatMass": {{FatMass}},
+	"fatMassPercent": {{FatMassPercent}},
+	"leanMass": {{LeanMass}}
+}
+```
+
+6. Click Save and step on your scale! 🎉
+
+## Help and Issues
+
+Feel free to open an issue or shoot me an email over at [`hello@adams.sh`](mailto:hello@adams.sh), should you have any questions or need help setting up the app!
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+Do whatever you want, just leave credit. :)
